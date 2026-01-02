@@ -1,0 +1,13 @@
+{
+  "java.project.referencedLibraries": [
+    "lib/**/*.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.base.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.controls.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.fxml.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.graphics.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.media.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.swing.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx.web.jar",
+    "C:\\Users\\Utilisateur\\OneDrive\\Desktop\\JavaFX\\lib\\javafx-swt.jar"
+  ]
+}
