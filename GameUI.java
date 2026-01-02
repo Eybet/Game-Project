@@ -60,7 +60,6 @@ public class GameUI {
     private HBox resourcesDisplay;
     private Scene currentScene;
     
-    // Monster data class
     private class MonsterData {
         StackPane pane;
         String type;
@@ -83,22 +82,21 @@ public class GameUI {
             this.targetX = x;
             this.targetY = y;
             
-            // Set stats based on type - DOUBLE HEALTH for fight area
             switch(type) {
                 case "slime":
-                    this.maxHealth = 60 + random.nextInt(40); // Double health
+                    this.maxHealth = 60 + random.nextInt(40);
                     this.attackPower = 5 + random.nextInt(5);
                     break;
                 case "skeleton":
-                    this.maxHealth = 100 + random.nextInt(60); // Double health
+                    this.maxHealth = 100 + random.nextInt(60);
                     this.attackPower = 8 + random.nextInt(7);
                     break;
                 case "goblin":
-                    this.maxHealth = 140 + random.nextInt(80); // Double health
+                    this.maxHealth = 140 + random.nextInt(80);
                     this.attackPower = 12 + random.nextInt(8);
                     break;
                 default:
-                    this.maxHealth = 100 + random.nextInt(100); // Double health
+                    this.maxHealth = 100 + random.nextInt(100);
                     this.attackPower = 10 + random.nextInt(10);
             }
             
@@ -106,7 +104,6 @@ public class GameUI {
         }
     }
     
-    // Training slime data class
     private class TrainingSlimeData {
         StackPane pane;
         int health;
@@ -135,21 +132,17 @@ public class GameUI {
     
     private void loadImages() {
         try {
-            // Character images
             soldierImage = loadImage("images/characters/soldier.png");
             knightImage = loadImage("images/characters/knight.png");
             
-            // Monster images
             slimeImage = loadImage("images/monsters/slime.png");
             skeletonImage = loadImage("images/monsters/skeleton.png");
             goblinImage = loadImage("images/monsters/goblin.png");
             
-            // UI images
             mapIconImage = loadImage("images/ui/map_icon.png");
             shopIconImage = loadImage("images/ui/shop_icon.png");
             menuBgImage = loadImage("images/ui/menu_bg.jpg");
             
-            // Background images
             commandCenterImage = loadImage("images/backgrounds/command_center.jpg");
             fightMapImage = loadImage("images/backgrounds/fight_map.jpg");
             trainingCampImage = loadImage("images/backgrounds/training_camp.jpg");
@@ -167,34 +160,28 @@ public class GameUI {
                 return new Image(file.toURI().toString());
             }
         } catch (Exception e) {
-            // Image not found - will use fallback
         }
         return null;
     }
     
-    // *** Smooth movement with Timeline animation ***
     private void movePlayerTo(double targetX, double targetY) {
         if (isMoving) return;
         
         isMoving = true;
         
-        // Show movement indicator
         Circle indicator = new Circle(5, Color.CYAN);
         indicator.setTranslateX(targetX);
         indicator.setTranslateY(targetY);
         centerArea.getChildren().add(indicator);
         
-        // Remove indicator after 0.5 seconds
         Timeline indicatorTimer = new Timeline(new KeyFrame(Duration.seconds(0.5), e -> {
             centerArea.getChildren().remove(indicator);
         }));
         indicatorTimer.play();
         
-        // Calculate distance and duration
         double distance = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
-        double duration = distance / 300.0; // 300 pixels per second
+        double duration = distance / 300.0;
         
-        // Create animation
         Timeline movement = new Timeline(
             new KeyFrame(Duration.ZERO,
                 new KeyValue(playerPane.translateXProperty(), playerX),
@@ -214,14 +201,12 @@ public class GameUI {
         movement.play();
     }
     
-    // *** Attack monster in fight area ***
     private void attackMonster(MonsterData monsterData) {
         if (!monsterData.alive) return;
         
         int playerDamage = game.getPlayer().getAttack();
         monsterData.health -= playerDamage;
         
-        // Update health bar
         if (monsterData.healthBar != null) {
             double healthPercent = (double) monsterData.health / monsterData.maxHealth;
             monsterData.healthBar.setProgress(healthPercent);
@@ -233,10 +218,8 @@ public class GameUI {
             }
         }
         
-        // Visual feedback
         if (monsterData.pane.getChildren().get(0) instanceof Rectangle) {
             Rectangle rect = (Rectangle) monsterData.pane.getChildren().get(0);
-            // Flash white to show damage
             Color originalColor = (Color) rect.getFill();
             rect.setFill(Color.WHITE);
             
@@ -247,10 +230,8 @@ public class GameUI {
         }
         
         if (monsterData.health <= 0) {
-            // Monster dies
             killMonster(monsterData);
             
-            // Reward player
             int goldReward = 25 + random.nextInt(25);
             int woodReward = 15 + random.nextInt(15);
             
@@ -260,21 +241,18 @@ public class GameUI {
             statusLabel.setText("Killed " + monsterData.type + "! +" + goldReward + " Gold, +" + woodReward + " Wood");
             updateResourceDisplay(resourcesDisplay);
             
-            // Check for victory
             checkVictory();
         } else {
             statusLabel.setText("Hit " + monsterData.type + " for " + playerDamage + " damage! Remaining HP: " + monsterData.health);
         }
     }
     
-    // *** Attack training slime ***
     private void attackTrainingSlime(TrainingSlimeData slimeData) {
         if (!slimeData.alive) return;
         
         int playerDamage = game.getPlayer().getAttack();
         slimeData.health -= playerDamage;
         
-        // Update health bar
         if (slimeData.healthBar != null) {
             double healthPercent = (double) slimeData.health / slimeData.maxHealth;
             slimeData.healthBar.setProgress(healthPercent);
@@ -286,10 +264,8 @@ public class GameUI {
             }
         }
         
-        // Visual feedback
         if (slimeData.pane.getChildren().get(0) instanceof Rectangle) {
             Rectangle rect = (Rectangle) slimeData.pane.getChildren().get(0);
-            // Flash white to show damage
             Color originalColor = (Color) rect.getFill();
             rect.setFill(Color.WHITE);
             
@@ -300,16 +276,13 @@ public class GameUI {
         }
         
         if (slimeData.health <= 0) {
-            // Training slime dies
             killTrainingSlime(slimeData);
             statusLabel.setText("Training slime destroyed! It will respawn soon.");
             
-            // Small reward for training
             game.getPlayer().addGold(5);
             game.getPlayer().addWood(2);
             updateResourceDisplay(resourcesDisplay);
             
-            // Respawn training slime after delay
             new Thread(() -> {
                 try {
                     Thread.sleep(3000);
@@ -323,20 +296,16 @@ public class GameUI {
         }
     }
     
-    // *** Kill monster completely (no trace) ***
     private void killMonster(MonsterData monsterData) {
         monsterData.alive = false;
         
-        // Remove monster completely from the scene
         Platform.runLater(() -> {
             centerArea.getChildren().remove(monsterData.pane);
         });
         
-        // Remove from monsters list
         monsters.remove(monsterData);
     }
     
-    // *** Kill training slime ***
     private void killTrainingSlime(TrainingSlimeData slimeData) {
         slimeData.alive = false;
         slimeData.pane.setVisible(false);
@@ -345,12 +314,11 @@ public class GameUI {
         }
     }
     
-    // *** Respawn training slime ***
     private void respawnTrainingSlime(TrainingSlimeData slimeData) {
         slimeData.alive = true;
         slimeData.health = slimeData.maxHealth;
-        slimeData.x = random.nextDouble() * 300 - 150; // -150 to 150
-        slimeData.y = random.nextDouble() * 150 - 75; // -75 to 75
+        slimeData.x = random.nextDouble() * 300 - 150;
+        slimeData.y = random.nextDouble() * 150 - 75;
         
         slimeData.pane.setTranslateX(slimeData.x);
         slimeData.pane.setTranslateY(slimeData.y);
@@ -365,17 +333,13 @@ public class GameUI {
         statusLabel.setText("Training slime respawned!");
     }
     
-    // *** Check if all monsters are dead (victory) ***
     private void checkVictory() {
         if (monsters.isEmpty()) {
-            // All monsters are dead - VICTORY!
             showVictoryScreen();
         }
     }
     
-    // *** Show victory screen ***
     private void showVictoryScreen() {
-        // Stop all timers
         if (monsterMovementTimer != null) {
             monsterMovementTimer.stop();
         }
@@ -383,7 +347,6 @@ public class GameUI {
             monsterAttackTimer.stop();
         }
         
-        // Create victory overlay
         StackPane victoryOverlay = new StackPane();
         victoryOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.8);");
         
@@ -410,17 +373,14 @@ public class GameUI {
         victoryBox.getChildren().addAll(victoryTitle, victoryMessage, rewardMessage, returnMessage);
         victoryOverlay.getChildren().add(victoryBox);
         
-        // Add overlay to current scene
         if (centerArea != null) {
             centerArea.getChildren().add(victoryOverlay);
         }
         
-        // Add extra rewards
         game.getPlayer().addGold(200);
         game.getPlayer().addWood(100);
         updateResourceDisplay(resourcesDisplay);
         
-        // Return to command center after 3 seconds
         victoryTimer = new Timeline(new KeyFrame(Duration.seconds(3), e -> {
             game.setCurrentLocation("command_center");
             showCommandCenter();
@@ -428,7 +388,6 @@ public class GameUI {
         victoryTimer.play();
     }
     
-    // *** Monster movement system - WITH 70% HEIGHT LIMIT ***
     private void startMonsterMovement() {
         if (monsterMovementTimer != null) {
             monsterMovementTimer.stop();
@@ -448,24 +407,20 @@ public class GameUI {
     }
     
     private void updateMonsterMovement(MonsterData monster) {
-        // Calculate distance to player
         double distanceToPlayer = Math.sqrt(
             Math.pow(monster.x - playerX, 2) + 
             Math.pow(monster.y - playerY, 2)
         );
         
-        // If close to player, chase player
         if (distanceToPlayer < 150) {
             monster.isChasing = true;
             monster.targetX = playerX;
             monster.targetY = playerY;
         } else if (monster.isChasing && distanceToPlayer > 200) {
-            // Stop chasing if too far
             monster.isChasing = false;
             setRandomMonsterTarget(monster);
         }
         
-        // If not chasing and reached target, set new random target
         if (!monster.isChasing) {
             double distanceToTarget = Math.sqrt(
                 Math.pow(monster.x - monster.targetX, 2) + 
@@ -477,8 +432,7 @@ public class GameUI {
             }
         }
         
-        // Move monster towards target
-        double speed = monster.isChasing ? 1.5 : 0.8; // Chase faster than wander
+        double speed = monster.isChasing ? 1.5 : 0.8;
         
         double dx = monster.targetX - monster.x;
         double dy = monster.targetY - monster.y;
@@ -488,29 +442,23 @@ public class GameUI {
             monster.x += (dx / distance) * speed;
             monster.y += (dy / distance) * speed;
             
-            // *** ENFORCE 70% HEIGHT LIMIT ***
-            // Limit monsters to 70% of screen height (600 * 0.7 = 420, so ±210 from center)
-            double maxY = 210; // 70% of 600 height
+            double maxY = 210;
             monster.y = Math.max(-maxY, Math.min(maxY, monster.y));
             
-            // Update position
             monster.pane.setTranslateX(monster.x);
             monster.pane.setTranslateY(monster.y);
         }
     }
     
     private void setRandomMonsterTarget(MonsterData monster) {
-        // Set new random target within bounds
         monster.targetX = monster.x + (random.nextDouble() * 100 - 50);
         monster.targetY = monster.y + (random.nextDouble() * 100 - 50);
         
-        // Keep within bounds - 70% height limit
-        double maxY = 210; // 70% of 600 height
+        double maxY = 210;
         monster.targetX = Math.max(-450, Math.min(450, monster.targetX));
         monster.targetY = Math.max(-maxY, Math.min(maxY, monster.targetY));
     }
     
-    // *** Training slime movement system ***
     private void startTrainingSlimeMovement() {
         if (trainingSlimeMovementTimer != null) {
             trainingSlimeMovementTimer.stop();
@@ -530,7 +478,6 @@ public class GameUI {
     }
     
     private void updateTrainingSlimeMovement(TrainingSlimeData slime) {
-        // If reached target, set new random target
         double distanceToTarget = Math.sqrt(
             Math.pow(slime.x - slime.targetX, 2) + 
             Math.pow(slime.y - slime.targetY, 2)
@@ -540,8 +487,7 @@ public class GameUI {
             setRandomTrainingSlimeTarget(slime);
         }
         
-        // Move slime towards target (slow movement)
-        double speed = 0.5; // Slow movement for training
+        double speed = 0.5;
         
         double dx = slime.targetX - slime.x;
         double dy = slime.targetY - slime.y;
@@ -551,23 +497,19 @@ public class GameUI {
             slime.x += (dx / distance) * speed;
             slime.y += (dy / distance) * speed;
             
-            // Update position
             slime.pane.setTranslateX(slime.x);
             slime.pane.setTranslateY(slime.y);
         }
     }
     
     private void setRandomTrainingSlimeTarget(TrainingSlimeData slime) {
-        // Set new random target within training area bounds
         slime.targetX = slime.x + (random.nextDouble() * 80 - 40);
         slime.targetY = slime.y + (random.nextDouble() * 80 - 40);
         
-        // Keep within training area bounds
         slime.targetX = Math.max(-200, Math.min(200, slime.targetX));
         slime.targetY = Math.max(-150, Math.min(150, slime.targetY));
     }
     
-    // *** Monster attack system ***
     private void startMonsterAttackTimer() {
         if (monsterAttackTimer != null) {
             monsterAttackTimer.stop();
@@ -587,19 +529,16 @@ public class GameUI {
     }
     
     private void checkMonsterAttack(MonsterData monster) {
-        // Calculate distance to player
         double distanceToPlayer = Math.sqrt(
             Math.pow(monster.x - playerX, 2) + 
             Math.pow(monster.y - playerY, 2)
         );
         
-        // If monster is close enough, attack player
         if (distanceToPlayer < 60 && monster.alive) {
             int monsterDamage = monster.attackPower;
             game.getPlayer().takeDamage(monsterDamage);
             updateResourceDisplay(resourcesDisplay);
             
-            // Visual feedback
             if (playerPane.getChildren().get(0) instanceof Rectangle) {
                 Rectangle playerRect = (Rectangle) playerPane.getChildren().get(0);
                 Color originalColor = (Color) playerRect.getFill();
@@ -615,7 +554,6 @@ public class GameUI {
                 statusLabel.setText(monster.type + " attacked you for " + monsterDamage + " damage!");
             });
             
-            // Check if player died
             if (game.getPlayer().getHealth() <= 0) {
                 Platform.runLater(() -> {
                     statusLabel.setText("You were defeated by " + monster.type + "! Returning to command center.");
@@ -636,7 +574,6 @@ public class GameUI {
     private StackPane createMonster(String monsterType, double x, double y) {
         StackPane monsterPane = new StackPane();
         
-        // Try to load monster image
         Image monsterImage = null;
         Color monsterColor = Color.RED;
         
@@ -661,13 +598,11 @@ public class GameUI {
             monsterView.setFitHeight(50);
             monsterPane.getChildren().add(monsterView);
         } else {
-            // Fallback colored rectangle
             Rectangle monsterRect = new Rectangle(50, 50);
             monsterRect.setFill(monsterColor);
             monsterPane.getChildren().add(monsterRect);
         }
         
-        // Add health bar
         ProgressBar healthBar = new ProgressBar(1.0);
         healthBar.setPrefWidth(50);
         healthBar.setPrefHeight(6);
@@ -690,13 +625,11 @@ public class GameUI {
             slimeView.setFitHeight(50);
             slimePane.getChildren().add(slimeView);
         } else {
-            // Fallback colored rectangle
             Rectangle slimeRect = new Rectangle(50, 50);
             slimeRect.setFill(Color.GREEN);
             slimePane.getChildren().add(slimeRect);
         }
         
-        // Add health bar
         ProgressBar healthBar = new ProgressBar(1.0);
         healthBar.setPrefWidth(50);
         healthBar.setPrefHeight(6);
@@ -710,24 +643,20 @@ public class GameUI {
         return slimePane;
     }
     
-    // *** Handle keyboard 'E' key press ***
     private void setupKeyboardControls(Scene scene) {
         scene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.E) {
-                // Attack nearest monster with 'E' key
                 attackNearestMonster();
             }
         });
     }
     
-    // *** Attack nearest monster ***
     private void attackNearestMonster() {
         if (monsters.isEmpty()) {
             statusLabel.setText("No monsters to attack!");
             return;
         }
         
-        // Find nearest monster
         MonsterData nearest = null;
         double minDistance = Double.MAX_VALUE;
         
@@ -745,7 +674,7 @@ public class GameUI {
         }
         
         if (nearest != null) {
-            if (minDistance < 100) { // Can only attack if close enough
+            if (minDistance < 100) {
                 attackMonster(nearest);
             } else {
                 statusLabel.setText("Too far to attack! Get closer to the monster.");
@@ -755,20 +684,17 @@ public class GameUI {
         }
     }
     
-    // *** Attack nearest training slime ***
     private void attackNearestTrainingSlime() {
         if (trainingSlimes.isEmpty()) {
             statusLabel.setText("No training slimes to attack!");
             return;
         }
         
-        // Find nearest training slime
         TrainingSlimeData nearest = null;
         double minDistance = Double.MAX_VALUE;
         
         for (TrainingSlimeData slime : trainingSlimes) {
             if (slime.alive) {
-                // Assuming player is at (0, 0) in training camp
                 double distance = Math.sqrt(
                     Math.pow(slime.x - 0, 2) + 
                     Math.pow(slime.y - 0, 2)
@@ -790,7 +716,6 @@ public class GameUI {
     public void showMainMenu() {
         root = new StackPane();
         
-        // Load main menu background
         if (menuBgImage != null) {
             background = new ImageView(menuBgImage);
             background.setFitWidth(1200);
@@ -798,34 +723,28 @@ public class GameUI {
             root.getChildren().add(background);
         } else {
             try {
-                // Try original path
                 Image bg = new Image("file:images/menu_bg.jpg");
                 background = new ImageView(bg);
                 background.setFitWidth(1200);
                 background.setFitHeight(800);
                 root.getChildren().add(background);
             } catch (Exception e) {
-                // Ultimate fallback
                 root.setStyle("-fx-background-color: linear-gradient(to bottom, #1a1a2e, #16213e);");
             }
         }
         
-        // Menu container
         VBox menuBox = new VBox(20);
         menuBox.setAlignment(Pos.CENTER);
         menuBox.setStyle("-fx-background-color: rgba(0,0,0,0.7); -fx-padding: 40px; -fx-background-radius: 15px;");
         
-        // Title
         Label title = new Label("STRATEGY GAME");
         title.setFont(Font.font("Arial", 36));
         title.setTextFill(Color.GOLD);
         
-        // Menu buttons
         Button continueBtn = createMenuButton("CONTINUE GAME");
         Button newGameBtn = createMenuButton("START NEW GAME");
         Button exitBtn = createMenuButton("EXIT");
         
-        // Button actions
         continueBtn.setOnAction(e -> {
             game.continueGame();
             showCharacterSelect();
@@ -871,7 +790,6 @@ public class GameUI {
         HBox characterBox = new HBox(40);
         characterBox.setAlignment(Pos.CENTER);
         
-        // Soldier option
         VBox soldierOption = new VBox(10);
         soldierOption.setAlignment(Pos.CENTER);
         
@@ -904,7 +822,6 @@ public class GameUI {
         
         soldierOption.getChildren().addAll(soldierPane, soldierLabel, soldierStats, selectSoldier);
         
-        // Knight option
         VBox knightOption = new VBox(10);
         knightOption.setAlignment(Pos.CENTER);
         
@@ -949,7 +866,6 @@ public class GameUI {
     }
     
     private void showCommandCenter() {
-        // Stop all timers when leaving fight area
         if (monsterMovementTimer != null) {
             monsterMovementTimer.stop();
         }
@@ -966,7 +882,6 @@ public class GameUI {
         BorderPane commandCenter = new BorderPane();
         commandCenter.setStyle("-fx-background-color: #2b2b2b;");
         
-        // Top status bar
         HBox topBar = new HBox(20);
         topBar.setPadding(new Insets(10));
         topBar.setStyle("-fx-background-color: #3c3c3c;");
@@ -975,25 +890,21 @@ public class GameUI {
         statusLabel.setTextFill(Color.WHITE);
         statusLabel.setFont(Font.font("Arial", 14));
         
-        // Resources display
         HBox resources = new HBox(15);
         updateResourceDisplay(resources);
         
         topBar.getChildren().addAll(statusLabel, resources);
         commandCenter.setTop(topBar);
         
-        // Center area - Command Center view
         StackPane centerArea = new StackPane();
         centerArea.setStyle("-fx-background-color: #1a1a2e;");
         
-        // Load command center background
         if (commandCenterImage != null) {
             ImageView ccView = new ImageView(commandCenterImage);
             ccView.setFitWidth(800);
             ccView.setFitHeight(500);
             centerArea.getChildren().add(ccView);
         } else {
-            // Fallback rectangle
             Rectangle ccRect = new Rectangle(800, 500);
             ccRect.setFill(Color.DARKGRAY);
             ccRect.setStroke(Color.GOLD);
@@ -1006,16 +917,13 @@ public class GameUI {
             centerArea.getChildren().addAll(ccRect, ccLabel);
         }
         
-        // Action buttons in center
         HBox actionButtons = new HBox(30);
         actionButtons.setAlignment(Pos.CENTER);
         actionButtons.setTranslateY(100);
         
-        // Map Icon (Teleport)
         Button mapBtn = createIconButton("MAP", "images/map_icon.png");
         mapBtn.setOnAction(e -> showTeleportMenu());
         
-        // Shop Icon
         Button shopBtn = createIconButton("SHOP", "images/shop_icon.png");
         shopBtn.setOnAction(e -> showShop());
         
@@ -1024,7 +932,6 @@ public class GameUI {
         
         commandCenter.setCenter(centerArea);
         
-        // Bottom controls
         HBox bottomBar = new HBox(10);
         bottomBar.setPadding(new Insets(10));
         bottomBar.setStyle("-fx-background-color: #3c3c3c;");
@@ -1043,7 +950,6 @@ public class GameUI {
         VBox iconBox = new VBox(5);
         iconBox.setAlignment(Pos.CENTER);
         
-        // Check which icon to load
         Image iconImage = null;
         if (imagePath.contains("map_icon") && mapIconImage != null) {
             iconImage = mapIconImage;
@@ -1057,16 +963,13 @@ public class GameUI {
             iconView.setFitHeight(64);
             iconBox.getChildren().add(iconView);
         } else {
-            // Fallback rectangle
             try {
-                // Try original method first
                 Image icon = new Image("file:" + imagePath);
                 ImageView iconView = new ImageView(icon);
                 iconView.setFitWidth(64);
                 iconView.setFitHeight(64);
                 iconBox.getChildren().add(iconView);
             } catch (Exception e) {
-                // Ultimate fallback
                 Rectangle iconRect = new Rectangle(64, 64);
                 iconRect.setFill(Color.GRAY);
                 iconBox.getChildren().add(iconRect);
@@ -1097,7 +1000,6 @@ public class GameUI {
         title.setFont(Font.font("Arial", 24));
         title.setTextFill(Color.CYAN);
         
-        // Teleport options
         Button fightAreaBtn = createTeleportButton("FIGHT AREA", "Battle monsters and collect resources");
         fightAreaBtn.setOnAction(e -> {
             game.teleportTo("fight_map");
@@ -1115,7 +1017,6 @@ public class GameUI {
         
         teleportMenu.getChildren().addAll(title, fightAreaBtn, trainingBtn, backBtn);
         
-        // Show as overlay
         StackPane overlay = new StackPane();
         overlay.getChildren().addAll(root, teleportMenu);
         
@@ -1151,7 +1052,6 @@ public class GameUI {
         BorderPane fightArea = new BorderPane();
         fightArea.setStyle("-fx-background-color: #1a1a1a;");
         
-        // Top bar
         HBox topBar = new HBox(20);
         topBar.setPadding(new Insets(10));
         topBar.setStyle("-fx-background-color: #333;");
@@ -1161,15 +1061,13 @@ public class GameUI {
         
         HBox resources = new HBox(15);
         updateResourceDisplay(resources);
-        resourcesDisplay = resources; // Store reference
+        resourcesDisplay = resources;
         
         topBar.getChildren().addAll(statusLabel, resources);
         fightArea.setTop(topBar);
         
-        // Center - Fight area
         centerArea = new StackPane();
         
-        // Load fight map background
         if (fightMapImage != null) {
             ImageView mapView = new ImageView(fightMapImage);
             mapView.setFitWidth(1000);
@@ -1177,26 +1075,22 @@ public class GameUI {
             centerArea.getChildren().add(mapView);
         } else {
             try {
-                // Try original path
                 Image mapImage = new Image("file:images/fight_map.png");
                 ImageView mapView = new ImageView(mapImage);
                 mapView.setFitWidth(1000);
                 mapView.setFitHeight(600);
                 centerArea.getChildren().add(mapView);
             } catch (Exception e) {
-                // Ultimate fallback
                 Rectangle mapRect = new Rectangle(1000, 600);
                 mapRect.setFill(Color.DARKGREEN);
                 centerArea.getChildren().add(mapRect);
             }
         }
         
-        // Clear previous monsters
         monsters.clear();
         
-        // Create 6 monsters with random positions - WITH 70% HEIGHT LIMIT
         String[] monsterTypes = {"slime", "skeleton", "goblin"};
-        double maxY = 210; // 70% of 600 height (600 * 0.7 = 420, so ±210 from center)
+        double maxY = 210;
         
         for (int i = 0; i < 6; i++) {
             String monsterType = monsterTypes[random.nextInt(monsterTypes.length)];
@@ -1206,13 +1100,12 @@ public class GameUI {
                 case "goblin": monsterColor = Color.ORANGE; break;
             }
             
-            double x = random.nextDouble() * 800 - 400; // -400 to 400
-            double y = random.nextDouble() * (maxY * 2) - maxY; // Limited to 70% height
+            double x = random.nextDouble() * 800 - 400;
+            double y = random.nextDouble() * (maxY * 2) - maxY;
             
             StackPane monsterPane = createMonster(monsterType, x, y);
             MonsterData monsterData = new MonsterData(monsterPane, monsterType, monsterColor, x, y);
             
-            // Get health bar reference
             for (javafx.scene.Node node : monsterPane.getChildren()) {
                 if (node instanceof ProgressBar) {
                     monsterData.healthBar = (ProgressBar) node;
@@ -1224,7 +1117,6 @@ public class GameUI {
             
             final MonsterData finalMonsterData = monsterData;
             
-            // Set monster click handler (LEFT CLICK to attack)
             monsterPane.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
                     attackMonster(finalMonsterData);
@@ -1246,7 +1138,6 @@ public class GameUI {
             centerArea.getChildren().add(monsterPane);
         }
         
-        // Create player character
         playerPane = new StackPane();
         if (game.getPlayer().getCharacterType().equals("soldier") && soldierImage != null) {
             ImageView playerView = new ImageView(soldierImage);
@@ -1259,27 +1150,23 @@ public class GameUI {
             playerView.setFitHeight(50);
             playerPane.getChildren().add(playerView);
         } else {
-            // Fallback rectangle
             Rectangle playerChar = new Rectangle(50, 50);
             playerChar.setFill(game.getPlayer().getCharacterType().equals("soldier") ? Color.RED : Color.BLUE);
             playerPane.getChildren().add(playerChar);
         }
         
-        // Reset player position
         playerX = 0;
         playerY = -100;
         playerPane.setTranslateX(playerX);
         playerPane.setTranslateY(playerY);
         centerArea.getChildren().add(playerPane);
         
-        // Player health display
         Label playerHealthLabel = new Label("HP: " + game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth());
         playerHealthLabel.setTextFill(Color.WHITE);
         playerHealthLabel.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 5px;");
         playerHealthLabel.setTranslateY(-130);
         centerArea.getChildren().add(playerHealthLabel);
         
-        // Update player health label periodically
         Timeline healthUpdateTimer = new Timeline(
             new KeyFrame(Duration.seconds(0.5), e -> {
                 playerHealthLabel.setText("HP: " + game.getPlayer().getHealth() + "/" + game.getPlayer().getMaxHealth());
@@ -1295,13 +1182,11 @@ public class GameUI {
         healthUpdateTimer.setCycleCount(Timeline.INDEFINITE);
         healthUpdateTimer.play();
         
-        // *** Add click-to-move for the entire area (RIGHT CLICK to move) ***
         centerArea.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 double targetX = e.getX() - centerArea.getWidth()/2;
                 double targetY = e.getY() - centerArea.getHeight()/2;
                 
-                // Limit movement to map bounds
                 targetX = Math.max(-450, Math.min(450, targetX));
                 targetY = Math.max(-250, Math.min(250, targetY));
                 
@@ -1312,7 +1197,6 @@ public class GameUI {
         
         fightArea.setCenter(centerArea);
         
-        // Bottom controls
         HBox bottomBar = new HBox(10);
         bottomBar.setPadding(new Insets(10));
         
@@ -1323,7 +1207,6 @@ public class GameUI {
         
         Button teleportBtn = new Button("BACK TO COMMAND CENTER");
         teleportBtn.setOnAction(e -> {
-            // Stop timers
             if (monsterMovementTimer != null) {
                 monsterMovementTimer.stop();
             }
@@ -1343,10 +1226,8 @@ public class GameUI {
         currentScene = scene;
         stage.setScene(scene);
         
-        // Setup keyboard controls
         setupKeyboardControls(scene);
         
-        // Start monster movement and attack timers
         startMonsterMovement();
         startMonsterAttackTimer();
     }
@@ -1355,7 +1236,6 @@ public class GameUI {
         BorderPane trainingArea = new BorderPane();
         trainingArea.setStyle("-fx-background-color: #1a1a1a;");
         
-        // Top bar
         HBox topBar = new HBox(20);
         topBar.setPadding(new Insets(10));
         topBar.setStyle("-fx-background-color: #333;");
@@ -1365,15 +1245,13 @@ public class GameUI {
         
         HBox resources = new HBox(15);
         updateResourceDisplay(resources);
-        resourcesDisplay = resources; // Store reference
+        resourcesDisplay = resources;
         
         topBar.getChildren().addAll(statusLabel, resources);
         trainingArea.setTop(topBar);
         
-        // Center - Training area
         StackPane center = new StackPane();
         
-        // Load training camp background
         if (trainingCampImage != null) {
             ImageView trainingView = new ImageView(trainingCampImage);
             trainingView.setFitWidth(1000);
@@ -1381,32 +1259,27 @@ public class GameUI {
             center.getChildren().add(trainingView);
         } else {
             try {
-                // Try original path
                 Image trainingImage = new Image("file:images/training_camp.png");
                 ImageView trainingView = new ImageView(trainingImage);
                 trainingView.setFitWidth(1000);
                 trainingView.setFitHeight(600);
                 center.getChildren().add(trainingView);
             } catch (Exception e) {
-                // Ultimate fallback
                 Rectangle trainingRect = new Rectangle(1000, 600);
                 trainingRect.setFill(Color.DARKBLUE);
                 center.getChildren().add(trainingRect);
             }
         }
         
-        // Clear previous training slimes
         trainingSlimes.clear();
         
-        // Create 4 training slimes with random positions
         for (int i = 0; i < 4; i++) {
-            double x = random.nextDouble() * 300 - 150; // -150 to 150
-            double y = random.nextDouble() * 150 - 75; // -75 to 75
+            double x = random.nextDouble() * 300 - 150;
+            double y = random.nextDouble() * 150 - 75;
             
             StackPane slimePane = createTrainingSlime(x, y);
             TrainingSlimeData slimeData = new TrainingSlimeData(slimePane, x, y);
             
-            // Get health bar reference
             for (javafx.scene.Node node : slimePane.getChildren()) {
                 if (node instanceof ProgressBar) {
                     slimeData.healthBar = (ProgressBar) node;
@@ -1418,7 +1291,6 @@ public class GameUI {
             
             final TrainingSlimeData finalSlimeData = slimeData;
             
-            // Set slime click handler (LEFT CLICK to attack)
             slimePane.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY) {
                     attackTrainingSlime(finalSlimeData);
@@ -1440,7 +1312,6 @@ public class GameUI {
             center.getChildren().add(slimePane);
         }
         
-        // Create player character for training
         StackPane trainingPlayer = new StackPane();
         if (game.getPlayer().getCharacterType().equals("soldier") && soldierImage != null) {
             ImageView playerView = new ImageView(soldierImage);
@@ -1462,49 +1333,41 @@ public class GameUI {
         trainingPlayer.setTranslateY(0);
         center.getChildren().add(trainingPlayer);
         
-        // Add keyboard controls for training camp
         center.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.E) {
                 attackNearestTrainingSlime();
             }
         });
         
-        // Add click-to-move for training area
         center.setOnMouseClicked(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 double targetX = e.getX() - center.getWidth()/2;
                 double targetY = e.getY() - center.getHeight()/2;
                 
-                // Limit to training area bounds
                 targetX = Math.max(-200, Math.min(200, targetX));
                 targetY = Math.max(-150, Math.min(150, targetY));
                 
-                // Show movement indicator
                 Circle indicator = new Circle(5, Color.CYAN);
                 indicator.setTranslateX(targetX);
                 indicator.setTranslateY(targetY);
                 center.getChildren().add(indicator);
                 
-                // Remove indicator after 0.5 seconds
                 Timeline indicatorTimer = new Timeline(new KeyFrame(Duration.seconds(0.5), ev -> {
                     center.getChildren().remove(indicator);
                 }));
                 indicatorTimer.play();
                 
-                // Move player
                 trainingPlayer.setTranslateX(targetX);
                 trainingPlayer.setTranslateY(targetY);
                 statusLabel.setText("Moving to training position...");
             }
         });
         
-        // Make center focusable for keyboard input
         center.setFocusTraversable(true);
         center.requestFocus();
         
         trainingArea.setCenter(center);
         
-        // Bottom controls
         HBox bottomBar = new HBox(10);
         bottomBar.setPadding(new Insets(10));
         
@@ -1515,7 +1378,6 @@ public class GameUI {
         
         Button teleportBtn = new Button("BACK TO COMMAND CENTER");
         teleportBtn.setOnAction(e -> {
-            // Stop timers
             if (trainingSlimeMovementTimer != null) {
                 trainingSlimeMovementTimer.stop();
             }
@@ -1530,7 +1392,6 @@ public class GameUI {
         Scene scene = new Scene(trainingArea, 1200, 800);
         stage.setScene(scene);
         
-        // Start training slime movement timer
         startTrainingSlimeMovement();
     }
     
@@ -1545,10 +1406,8 @@ public class GameUI {
         
         Player player = game.getPlayer();
         
-        // Upgrade options
         VBox upgrades = new VBox(15);
         
-        // Health upgrade
         HBox healthUpgrade = new HBox(20);
         healthUpgrade.setAlignment(Pos.CENTER_LEFT);
         
@@ -1567,7 +1426,6 @@ public class GameUI {
         
         healthUpgrade.getChildren().addAll(healthLabel, healthCost, buyHealth);
         
-        // Attack upgrade
         HBox attackUpgrade = new HBox(20);
         attackUpgrade.setAlignment(Pos.CENTER_LEFT);
         
@@ -1588,7 +1446,6 @@ public class GameUI {
         
         upgrades.getChildren().addAll(healthUpgrade, attackUpgrade);
         
-        // Player stats
         VBox playerStats = new VBox(5);
         playerStats.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-padding: 15px;");
         
@@ -1614,7 +1471,6 @@ public class GameUI {
         
         shopMenu.getChildren().addAll(title, upgrades, playerStats, backBtn);
         
-        // Show as overlay
         StackPane overlay = new StackPane();
         overlay.getChildren().addAll(root, shopMenu);
         
@@ -1623,7 +1479,6 @@ public class GameUI {
     }
     
     private void updateShop(VBox shopMenu) {
-        // This would refresh shop display
         showShop();
     }
     
